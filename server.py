@@ -344,7 +344,7 @@ def push_to_chat_list(user, friend):
     user_ref = db.collection("users").document(user)
     user_ref.collection("chat_list").document(friend).set({
         'username' : friend
-    })
+    }, merge=True)
 
 def push_message(sender, receiver, message, time, date):
     try:
@@ -354,17 +354,37 @@ def push_message(sender, receiver, message, time, date):
         sender_msg_ref = db.collection("users").document(sender).collection("chat_list").document(receiver).collection("messages").document()
         receiver_msg_ref = db.collection("users").document(receiver).collection("chat_list").document(sender).collection("messages").document()
         
+        # References to the chat list documents themselves (for metadata)
+        sender_chat_ref = db.collection("users").document(sender).collection("chat_list").document(receiver)
+        receiver_chat_ref = db.collection("users").document(receiver).collection("chat_list").document(sender)
+        
+        timestamp = firestore.SERVER_TIMESTAMP
+        
         msg_data = {
             'sender' : sender,
             'receiver' : receiver,
             'message' : message,
             'time' : time,
             'date' : date,
-            'timestamp': firestore.SERVER_TIMESTAMP
+            'timestamp': timestamp
+        }
+        
+        # Metadata to update in the chat list document (denormalization for speed)
+        list_update_data = {
+            'username': receiver, # Will be overwritten to 'sender' for the other user below
+            'last_message': message,
+            'time': time,
+            'date': date,
+            'timestamp': timestamp,
+            'sender': sender
         }
         
         batch.set(sender_msg_ref, msg_data)
         batch.set(receiver_msg_ref, msg_data)
+        
+        # Update chat list docs with last message info
+        batch.set(sender_chat_ref, {**list_update_data, 'username': receiver}, merge=True)
+        batch.set(receiver_chat_ref, {**list_update_data, 'username': sender}, merge=True)
         
         batch.commit()
         print("Hit : message sent succesfully (batch)!")
@@ -375,10 +395,44 @@ def push_message(sender, receiver, message, time, date):
 def load_chat_list(user):
     user_ref = db.collection("users").document(user)
     chats = user_ref.collection("chat_list").stream()
+    
     chat_list = []
     for chat in chats:
-        chat_data = chat.to_dict()
-        chat_list.append(chat_data['username'])
+        data = chat.to_dict()
+        friend_username = data.get('username')
+        
+        # Optimization: Use denormalized data if available
+        if 'last_message' in data:
+            chat_list.append({
+                'username': friend_username,
+                'last_message': data.get('last_message'),
+                'time': data.get('time'),
+                'date': data.get('date'),
+                'sender': data.get('sender'),
+                'timestamp': data.get('timestamp')
+            })
+        else:
+            # Fallback for legacy data: fetch last message from subcollection
+            try:
+                last_msg_query = user_ref.collection("chat_list").document(friend_username).collection("messages").order_by('timestamp', direction=firestore.Query.DESCENDING).limit(1).get()
+                if last_msg_query:
+                    last_msg = last_msg_query[0].to_dict()
+                    chat_list.append({
+                        'username': friend_username,
+                        'last_message': last_msg.get('message'),
+                        'time': last_msg.get('time'),
+                        'date': last_msg.get('date'),
+                        'sender': last_msg.get('sender'),
+                        'timestamp': last_msg.get('timestamp')
+                    })
+                else:
+                     chat_list.append({'username': friend_username, 'last_message': '', 'time': '', 'date': '', 'sender': '', 'timestamp': 0})
+            except:
+                chat_list.append({'username': friend_username, 'last_message': '', 'time': '', 'date': '', 'sender': '', 'timestamp': 0})
+    
+    # Sort by timestamp descending (newest first) in Python to handle legacy data safely
+    chat_list.sort(key=lambda x: x.get('timestamp') or 0, reverse=True)
+    
     return chat_list
 
 def load_chats(user, friend, after_timestamp=None):

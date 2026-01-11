@@ -120,18 +120,17 @@ def remove_friend_route():
 @app.route('/chat/load_chat_list')
 def load_chat_list_section():
     username = session['username']
-    friends = load_chat_list(username)
+    # load_chat_list now returns the full data structure with messages
+    friends_data = load_chat_list(username)
+    
     data = []
-    for friend in friends:
-        chats = load_chats(username, friend, None)
-        last_msg = chats[-1] if chats else None
-        data.append({
-            'username': friend,
-            'last_message': last_msg['message'] if last_msg else '',
-            'time': last_msg['time'] if last_msg else '',
-            'date': last_msg['date'] if last_msg else '',
-            'sender': last_msg['sender'] if last_msg else ''
-        })
+    for chat in friends_data:
+        # We just need to inject the display name
+        friend_username = chat['username']
+        name = get_name_by_username(friend_username)
+        chat['name'] = name if name else friend_username
+        data.append(chat)
+        
     return jsonify(data)
 
 @app.route('/chat/load_chats/<friend>')
