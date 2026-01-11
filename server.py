@@ -348,27 +348,26 @@ def push_to_chat_list(user, friend):
 
 def push_message(sender, receiver, message, time, date):
     try:
-        #push chat in sender section
-        user_ref = db.collection("users").document(sender)
-        user_ref.collection("chat_list").document(receiver).collection("messages").add({
+        # Use batch write for atomicity and speed
+        batch = db.batch()
+        
+        sender_msg_ref = db.collection("users").document(sender).collection("chat_list").document(receiver).collection("messages").document()
+        receiver_msg_ref = db.collection("users").document(receiver).collection("chat_list").document(sender).collection("messages").document()
+        
+        msg_data = {
             'sender' : sender,
             'receiver' : receiver,
             'message' : message,
             'time' : time,
             'date' : date,
             'timestamp': firestore.SERVER_TIMESTAMP
-        })
-        #push chat in receiver section
-        friend_ref = db.collection("users").document(receiver)
-        friend_ref.collection("chat_list").document(sender).collection("messages").add({
-            'sender' : sender,
-            'receiver' : receiver,
-            'message' : message,
-            'time' : time,
-            'date' : date,
-            'timestamp': firestore.SERVER_TIMESTAMP
-        })
-        print("Hit : message sent succesfully!")
+        }
+        
+        batch.set(sender_msg_ref, msg_data)
+        batch.set(receiver_msg_ref, msg_data)
+        
+        batch.commit()
+        print("Hit : message sent succesfully (batch)!")
     except Exception as error:
         print(f'Error : {error}')
 
@@ -393,7 +392,7 @@ def load_chats(user, friend, after_timestamp=None):
         except Exception:
             return []
     else:
-        friend_chat_section = messages_ref.order_by('timestamp').stream()
+        friend_chat_section = messages_ref.order_by('timestamp').limit_to_last(50).get()
 
     chats = []
     for message in friend_chat_section:
@@ -418,7 +417,7 @@ def load_chats(user, friend, after_timestamp=None):
         chats.append(output)
     return chats
 
-def listen_for_messages(user, friend):
+def listen_for_messages(user, friend, after_timestamp=None):
     user_ref = db.collection("users").document(user)
     messages_ref = user_ref.collection("chat_list").document(friend).collection("messages")
     
@@ -445,7 +444,15 @@ def listen_for_messages(user, friend):
 
     # Listen to the last 50 messages and any new ones
     # limit_to_last prevents loading the entire history on every connection
-    query = messages_ref.order_by('timestamp').limit_to_last(50)
+    if after_timestamp and float(after_timestamp) > 0:
+        try:
+            dt = datetime.fromtimestamp(float(after_timestamp), tz=timezone.utc)
+            query = messages_ref.where('timestamp', '>', dt).order_by('timestamp')
+        except:
+            query = messages_ref.order_by('timestamp').limit_to_last(50)
+    else:
+        query = messages_ref.order_by('timestamp').limit_to_last(50)
+        
     watch = query.on_snapshot(on_snapshot)
     
     try:

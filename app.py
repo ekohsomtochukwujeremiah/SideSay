@@ -141,7 +141,8 @@ def load_chats_section(friend):
 
 @app.route('/chat/stream/<friend>')
 def stream_chat(friend):
-    return Response(listen_for_messages(session['username'], friend), mimetype='text/event-stream')
+    after = request.args.get('after')
+    return Response(listen_for_messages(session['username'], friend, after), mimetype='text/event-stream')
 
 @app.route('/chat/load_chat/<friend>/send_message')
 def send_message(friend):
