@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MessGo Web</title>
+    <title>SideSay Web</title>
     <!-- Flask Static Link for Favicon -->
     <link rel="icon" href="{{ url_for('static', filename='logo.png') }}" type="image/png">
     <link rel="stylesheet" href="{{ url_for('static', filename='themes.css') }}">
     <script>
         (function() {
-            const savedTheme = localStorage.getItem('messgo_color_theme') || 'green-black';
+            const savedTheme = localStorage.getItem('sidesay_color_theme') || 'green-black';
             document.documentElement.setAttribute('data-theme', savedTheme);
             
-            const savedFontSize = localStorage.getItem('messgo_font_size') || 'medium';
+            const savedFontSize = localStorage.getItem('sidesay_font_size') || 'medium';
             const sizes = { 'small': '14px', 'medium': '16px', 'large': '18px' };
             document.documentElement.style.fontSize = sizes[savedFontSize];
         })();
@@ -1351,7 +1351,7 @@
                             <div style="position: absolute; top: 0; left: 0; width: 100%; height: 3px; background: linear-gradient(90deg, transparent, var(--accent), transparent);"></div>
                             <div class="user-avatar-small" id="result-avatar" style="width: 80px; height: 80px; font-size: 2rem; margin: 0 auto 15px; box-shadow: 0 0 20px rgba(0,0,0,0.5);"></div>
                             <h3 id="result-username" style="margin-bottom: 5px; font-size: 1.3rem;"></h3>
-                            <p id="result-handle" style="color: var(--accent); font-size: 0.9rem; margin-bottom: 10px; font-family: monospace; opacity: 0.8;">MessGo User</p>
+                            <p id="result-handle" style="color: var(--accent); font-size: 0.9rem; margin-bottom: 10px; font-family: monospace; opacity: 0.8;">SideSay User</p>
                             <p id="result-bio" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; font-style: italic; line-height: 1.5;"></p>
                             <button id="connect-btn" onclick="connectFriend()" style="width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 10px; font-weight: 700; cursor: pointer; color: black; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
@@ -1376,7 +1376,7 @@
         <div id="view-placeholder" class="content-view active placeholder-state">
             <div style="opacity: 0.5;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-                <h2 style="margin-top: 20px;">MessGo Web</h2>
+                <h2 style="margin-top: 20px;">SideSay Web</h2>
                 <p>Select a chat to start messaging securely.</p>
             </div>
         </div>
@@ -1545,7 +1545,7 @@
 
                     <div style="margin-top: 40px; text-align: center;">
                         <a onclick="openLogoutModal()" style="cursor: pointer; color: #f43f5e; text-decoration: none; border: 1px solid #f43f5e; padding: 12px 30px; border-radius: 8px; display: inline-block; font-weight: 600;">Log Out</a>
-                        <p style="margin-top: 15px; color: var(--text-muted); font-size: 0.75rem;">MessGo v26.00</p>
+                        <p style="margin-top: 15px; color: var(--text-muted); font-size: 0.75rem;">SideSay v26.00</p>
                     </div>
                 </div>
 
@@ -2324,6 +2324,8 @@
             formData.append('message', text);
             formData.append('time', time);
             formData.append('date', date);
+            formData.append('sender_name', myProfileData.name);
+            formData.append('receiver_name', currentChatName);
 
             fetch(`/chat/load_chat/${currentChatUser}/send_message`, {
                 method: 'POST',
@@ -2527,11 +2529,17 @@
         }
 
         // --- Chat List Logic ---
+        let lastChatListHash = "";
+        
         async function loadChatList() {
             try {
                 const response = await fetch('/chat/load_chat_list');
                 if (response.ok) {
                     const chatsData = await response.json();
+                    
+                    // Optimization: Don't rebuild DOM if data hasn't changed
+                    const currentHash = JSON.stringify(chatsData);
+                    if (currentHash === lastChatListHash) return;
 
                     const enrichedData = await Promise.all(chatsData.map(async (chat) => {
                         const username = chat.username;
@@ -2556,6 +2564,8 @@
 
                     // Sort by timestamp descending (newest first)
                     enrichedData.sort((a, b) => b.timestamp - a.timestamp);
+                    
+                    lastChatListHash = JSON.stringify(chatsData); // Update hash after processing
 
                     const container = document.getElementById('list-chats');
                     
@@ -2712,7 +2722,7 @@
         };
 
         function getRecentEmojis() {
-            const stored = localStorage.getItem('messgo_recent_emojis');
+            const stored = localStorage.getItem('sidesay_recent_emojis');
             return stored ? JSON.parse(stored) : [];
         }
 
@@ -2721,7 +2731,7 @@
             recents = recents.filter(e => e !== emoji);
             recents.unshift(emoji);
             if (recents.length > 18) recents.pop();
-            localStorage.setItem('messgo_recent_emojis', JSON.stringify(recents));
+            localStorage.setItem('sidesay_recent_emojis', JSON.stringify(recents));
             renderEmojiPicker();
         }
 
@@ -3222,7 +3232,7 @@
                 body.classList.remove('light-mode');
             }
             
-            localStorage.setItem('messgo_theme', mode);
+            localStorage.setItem('sidesay_theme', mode);
             
             // Update Toggle UI
             document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
@@ -3239,7 +3249,7 @@
                 'large': '18px'
             };
             document.documentElement.style.fontSize = sizes[size];
-            localStorage.setItem('messgo_font_size', size);
+            localStorage.setItem('sidesay_font_size', size);
             
             // Update UI
             document.querySelectorAll('#font-size-toggle .theme-toggle-btn').forEach(btn => {
@@ -3251,11 +3261,11 @@
         // --- Appearance Logic ---
         // Initialize Theme
         (function initTheme() {
-            const savedTheme = localStorage.getItem('messgo_theme') || 'dark';
+            const savedTheme = localStorage.getItem('sidesay_theme') || 'dark';
             changeTheme(savedTheme);
             
             // Init Font UI
-            const savedSize = localStorage.getItem('messgo_font_size') || 'medium';
+            const savedSize = localStorage.getItem('sidesay_font_size') || 'medium';
             const btn = document.querySelector(`#font-size-toggle .theme-toggle-btn[data-size="${savedSize}"]`);
             if(btn) btn.classList.add('active');
         })();
@@ -3363,7 +3373,7 @@
 
         function applyTheme(themeName) {
             document.documentElement.setAttribute('data-theme', themeName);
-            localStorage.setItem('messgo_color_theme', themeName);
+            localStorage.setItem('sidesay_color_theme', themeName);
             // Visual feedback on picker
             document.querySelectorAll('.theme-option').forEach(opt => {
                 if(opt.dataset.value === themeName) opt.style.borderColor = 'var(--accent)';
@@ -3373,7 +3383,7 @@
 
         function setBubbleStyle(style) {
             document.documentElement.setAttribute('data-bubble-style', style);
-            localStorage.setItem('messgo_bubble_style', style);
+            localStorage.setItem('sidesay_bubble_style', style);
             document.querySelectorAll('#bubble-style-toggle .theme-toggle-btn').forEach(btn => {
                 if(btn.dataset.bubble === style) btn.classList.add('active');
                 else btn.classList.remove('active');
@@ -3397,21 +3407,21 @@
         function toggleAmoled(isChecked) {
             if(isChecked) document.body.classList.add('amoled-mode');
             else document.body.classList.remove('amoled-mode');
-            localStorage.setItem('messgo_amoled', isChecked);
+            localStorage.setItem('sidesay_amoled', isChecked);
         }
 
         // Init Settings
         (function() {
             // Theme
-            const savedTheme = localStorage.getItem('messgo_color_theme') || 'green-black';
+            const savedTheme = localStorage.getItem('sidesay_color_theme') || 'green-black';
             applyTheme(savedTheme);
             
             // Bubble
-            const savedBubble = localStorage.getItem('messgo_bubble_style') || 'modern';
+            const savedBubble = localStorage.getItem('sidesay_bubble_style') || 'modern';
             setBubbleStyle(savedBubble);
             
             // Amoled
-            const savedAmoled = localStorage.getItem('messgo_amoled') === 'true';
+            const savedAmoled = localStorage.getItem('sidesay_amoled') === 'true';
             const amoledToggle = document.getElementById('amoled-toggle');
             if(amoledToggle) {
                 amoledToggle.querySelector('input').checked = savedAmoled;

@@ -125,10 +125,11 @@ def load_chat_list_section():
     
     data = []
     for chat in friends_data:
-        # We just need to inject the display name
-        friend_username = chat['username']
-        name = get_name_by_username(friend_username)
-        chat['name'] = name if name else friend_username
+        # Optimization: Only fetch name if not already denormalized in server.py
+        if not chat.get('name'):
+            friend_username = chat['username']
+            name = get_name_by_username(friend_username)
+            chat['name'] = name if name else friend_username
         data.append(chat)
         
     return jsonify(data)
@@ -152,9 +153,10 @@ def send_message(friend):
     message = request.values.get('message')
     time = request.values.get('time')
     date = request.values.get('date')
-    push_to_chat_list(user, friend)
-    push_to_chat_list(friend, user)
-    push_message(user, friend, message, time, date)
+    sender_name = request.values.get('sender_name')
+    receiver_name = request.values.get('receiver_name')
+    # push_to_chat_list calls removed as push_message handles it in batch
+    push_message(user, friend, message, time, date, sender_name, receiver_name)
     return jsonify({'status': 'success'})
 
 @app.route('/chat/delete_chats/<friend>')

@@ -347,7 +347,7 @@ def push_to_chat_list(user, friend):
         'username' : friend
     }, merge=True)
 
-def push_message(sender, receiver, message, time, date):
+def push_message(sender, receiver, message, time, date, sender_name=None, receiver_name=None):
     try:
         # Use batch write for atomicity and speed
         batch = db.batch()
@@ -383,9 +383,17 @@ def push_message(sender, receiver, message, time, date):
         batch.set(sender_msg_ref, msg_data)
         batch.set(receiver_msg_ref, msg_data)
         
-        # Update chat list docs with last message info
-        batch.set(sender_chat_ref, {**list_update_data, 'username': receiver}, merge=True)
-        batch.set(receiver_chat_ref, {**list_update_data, 'username': sender}, merge=True)
+        # Update chat list docs with last message info and NAMES (Denormalization)
+        # Sender's list needs Receiver's name
+        sender_chat_data = {**list_update_data, 'username': receiver}
+        if receiver_name: sender_chat_data['name'] = receiver_name
+        
+        # Receiver's list needs Sender's name
+        receiver_chat_data = {**list_update_data, 'username': sender}
+        if sender_name: receiver_chat_data['name'] = sender_name
+        
+        batch.set(sender_chat_ref, sender_chat_data, merge=True)
+        batch.set(receiver_chat_ref, receiver_chat_data, merge=True)
         
         batch.commit()
         print("Hit : message sent succesfully (batch)!")
@@ -417,7 +425,8 @@ def load_chat_list(user):
                 'time': data.get('time'),
                 'date': data.get('date'),
                 'sender': data.get('sender'),
-                'timestamp': ts
+                'timestamp': ts,
+                'name': data.get('name') # Fetch denormalized name
             })
         else:
             # Fallback for legacy data: fetch last message from subcollection
@@ -437,7 +446,8 @@ def load_chat_list(user):
                         'time': last_msg.get('time'),
                         'date': last_msg.get('date'),
                         'sender': last_msg.get('sender'),
-                        'timestamp': lm_ts
+                        'timestamp': lm_ts,
+                        'name': data.get('name')
                     })
                 else:
                      chat_list.append({'username': friend_username, 'last_message': '', 'time': '', 'date': '', 'sender': '', 'timestamp': 0})

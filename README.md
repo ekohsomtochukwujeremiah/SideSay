@@ -1,4 +1,4 @@
-# MessGo
+# SideSay
 
 > **"Your words belong to the moment, not the server."**
 
@@ -6,13 +6,13 @@
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-2.0%2B-green)](https://flask.palletsprojects.com/)
 
-MessGo is a real-time messaging sanctuary built on the philosophy of ephemeral communication. In a world where everything is recorded, we offer the freedom of transience. Connect securely using unique keys or usernames, manage your private profile, and experience privacy by design.
+SideSay is a real-time messaging sanctuary built on the philosophy of ephemeral communication. In a world where everything is recorded, we offer the freedom of transience. Connect securely using unique keys or usernames, manage your private profile, and experience privacy by design.
 
 ---
 
 ## 🛡️ Core Philosophy
 
-We believe that digital communication should mimic the natural, fleeting nature of face-to-face conversation. MessGo is designed to be a **"Private Existence"** platform where your digital footprint is minimized by default.
+We believe that digital communication should mimic the natural, fleeting nature of face-to-face conversation. SideSay is designed to be a **"Private Existence"** platform where your digital footprint is minimized by default.
 
 ---
 
@@ -34,7 +34,7 @@ We believe that digital communication should mimic the natural, fleeting nature 
 
 ## 🛠️ Tech Stack
 
-MessGo is engineered for speed, security, and simplicity using a robust modern stack.
+SideSay is engineered for speed, security, and simplicity using a robust modern stack.
 
 | Layer | Technology | Description |
 | :--- | :--- | :--- |
@@ -60,8 +60,8 @@ Ensure you have the following installed on your machine:
 
 1.  **Clone the Repository**
     ```bash
-    git clone https://github.com/yourusername/messgo.git
-    cd messgo
+    git clone https://github.com/yourusername/sidesay.git
+    cd sidesay
     ```
 
 2.  **Set up a Virtual Environment (Recommended)**
