@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import queue
 import json
 from functools import lru_cache
+import time
 
 credentials = credentials.Certificate('serviceAccountKey.json')
 firebase_admin.initialize_app(credentials)
@@ -531,19 +532,29 @@ def listen_for_messages(user, friend, after_timestamp=None):
         
     watch = query.on_snapshot(on_snapshot)
     
+    # Send retry instruction for client reconnection
+    yield "retry: 1000\n\n"
+    
+    start_time = time.time()
+    
     try:
         while True:
+            # Rotate connection before Gunicorn timeout (30s default)
+            if time.time() - start_time > 25:
+                break
+                
             try:
                 # Wait for new data (timeout allows sending keep-alive)
-                msg = q.get(timeout=5)
+                msg = q.get(timeout=1)
                 yield f"data: {json.dumps(msg)}\n\n"
             except queue.Empty:
                 # Send a comment with padding to force flush through Nginx/proxy buffers
                 yield ": keep-alive " + (" " * 1024) + "\n\n"
     except GeneratorExit:
-        watch.unsubscribe()
+        pass
     except Exception as e:
         print(f"Stream Error: {e}")
+    finally:
         watch.unsubscribe()
 
 def delete_chats(user, friend):
